@@ -2,7 +2,7 @@
 ##Dmitry Sutormin, 2021##
 ##Spacers blast analysis##
 
-#1) Script reads blast output and groups it by spacers.
+# Script reads spacers blast output and groups it by spacers source and target.
 ###############################################
 
 

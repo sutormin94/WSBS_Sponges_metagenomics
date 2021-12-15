@@ -1,0 +1,18 @@
+# hmmbuild :: profile HMM construction from multiple sequence alignments
+# HMMER 3.2.1 (June 2018); http://hmmer.org/
+# Copyright (C) 2018 Howard Hughes Medical Institute.
+# Freely distributed under the BSD open source license.
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# input alignment file:             /home/cls01/Data_Spongy_metagenomes/Spongy/Anti_phage_systems/PADS_Arsenal_gr_cl_ss500_trimAl/SHEDU/PADS_Arsenal_Bacteria_SHEDU_SduA_repr_ss500_mf_linsi_10_gt50_ph
+# output HMM file:                  /home/cls01/Data_Spongy_metagenomes/Spongy/Anti_phage_systems/PADS_Arsenal_gr_cl_ss500_trimAl/SHEDU/PADS_Arsenal_Bacteria_SHEDU_SduA_repr_ss500_mf_linsi_10_gt50_hmm_prof
+# name (the single) HMM:            SHEDU_SduA
+# output directed to file:          /home/cls01/Data_Spongy_metagenomes/Spongy/Anti_phage_systems/PADS_Arsenal_gr_cl_ss500_trimAl/SHEDU/PADS_Arsenal_Bacteria_SHEDU_SduA_repr_ss500_mf_linsi_10_gt50_hmmbuild_log
+# input alignment is asserted as:   protein
+# number of worker threads:         16
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+# idx name                  nseq  alen  mlen eff_nseq re/pos description
+#---- -------------------- ----- ----- ----- -------- ------ -----------
+1     SHEDU_SduA             500   286   269    11.90  0.590 
+
+# CPU time: 0.37u 0.01s 00:00:00.38 Elapsed: 00:00:00.37
