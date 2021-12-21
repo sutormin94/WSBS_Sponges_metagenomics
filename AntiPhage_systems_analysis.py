@@ -398,15 +398,18 @@ def plot_cumul_step_curve(Sample_assembly_len, pwd):
     plt.figure(figsize=(4, 3))
     
     for Sample_type, len_data in Sample_assembly_len.items():
-    
-        plt.step(range(len(len_data)), len_data, label=Sample_type)
+        
+        if 'VRS' in Sample_type:
+            plt.step(range(len(len_data)), len_data, linestyle='--', label=Sample_type)
+        else:
+            plt.step(range(len(len_data)), len_data, label=Sample_type)
     
     plt.ylabel("Cumulative length, nt", size=12)
     plt.xlabel("Contig #", size=12)
     plt.legend(frameon=False, markerscale=10, handlelength=1.7, handletextpad=1, fontsize=8)
     plt.tight_layout()
-    plt.savefig(pwd+"Cumulative_length_of_assemblies_2018.png", dpi=300) 
-    plt.savefig(pwd+"Cumulative_length_of_assemblies_2018.svg", dpi=300)   
+    plt.savefig(pwd+"Cumulative_length_of_assemblies_2018_v2.png", dpi=300) 
+    plt.savefig(pwd+"Cumulative_length_of_assemblies_2018_v2.svg", dpi=300)   
     
     return
 
@@ -757,6 +760,7 @@ def find_DS_in_contigs(Sample_cont_based_dict, pwd):
     #Retrive data for contigs and assembly: coverage depth, length, number of reads.
     Sample_cont_cov_dict, Sample_read_num, Sample_assembly_len=read_cov_data_file(pwd)
     
+    """
     #Output putative defense systems.
     Putative_systems_output=open(f'{pwd}\PADS_based_DS_detection\Sample_contig_system_genes_annotations.txt', 'w')
     Putative_systems_output_long=open(f'{pwd}\PADS_based_DS_detection\Sample_contig_system_genes_annotations_long.txt', 'w')
@@ -806,10 +810,10 @@ def find_DS_in_contigs(Sample_cont_based_dict, pwd):
     #Visualize normalized abundance of DS genes and DS.
     heatmap_viz(Samples_DS_genes_df_norm, pwd+'PADS_based_DS_detection\\2018_Normalized_number_of_defense_systems_genes_in_datasets.svg', 'Normalized number of defense systems genes in datasets', '\ndefense genes, norm', Adj_params)
     heatmap_viz(Samples_DS_sys_df_norm, pwd+'PADS_based_DS_detection\\2018_Normalized_number_of_defense_systems_in_datasets.svg', 'Normalized number of defense systems in datasets', '\ndefense systems, norm', Adj_params)
-    
+    """
     return
 
-#find_DS_in_contigs(Sample_cont_based_dict, PWD)
+find_DS_in_contigs(Sample_cont_based_dict, PWD)
 
 
 
@@ -908,7 +912,7 @@ def Read_DefenseFinder_output_group_norm_data(pwd):
           
     return
 
-Read_DefenseFinder_output_group_norm_data(PWD)
+#Read_DefenseFinder_output_group_norm_data(PWD)
 
 
 
@@ -1078,4 +1082,4 @@ def Read_PADLOC_output_group_norm_data(pwd):
     return
     
 
-Read_PADLOC_output_group_norm_data(PWD)
+#Read_PADLOC_output_group_norm_data(PWD)
