@@ -46,7 +46,7 @@ def read_assemblies_filt_write(inpath, outpath, Contigs_to_remove):
     for record in SeqIO.parse(filein, "fasta"):
         Contig_ID=record.id
         if Contig_ID not in Contigs_to_remove:
-            fileout.write(f'{Contig_ID}\n{str(record.seq)}\n')
+            fileout.write(f'>{Contig_ID}\n{str(record.seq)}\n')
         else:
             print(Contig_ID)
             
