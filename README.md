@@ -1,9 +1,12 @@
 # WSBS_Sponges_metagenomics
-An interplay between viruses and bacteria associated with White Sea sponges revealed by metagenomics.
+
+An interplay between viruses and bacteria associated with White Sea sponges revealed by metagenomics
 
 This repository contains a set of python scripts which have been used for metagenomic data analysis and visualization.
+Original sequencing data were deposited in SRA (SRR17015069-SRR17015085). Metagenome assemblies were deposited in GeneBank under the BioProject PRJNA781598.
 
-
+If you find this code useful and would like to use it in your own research, please, cite:
+Rusanova A, Fedorchuk V, Toshchakov S, Dubiley S, Sutormin D. An Interplay between Viruses and Bacteria Associated with the White Sea Sponges Revealed by Metagenomics. Life (Basel). 2021 Dec 24;12(1):25. doi: 10.3390/life12010025. PMID: 35054418; PMCID: PMC8777954.
 
 ## Assembly_average_cov_depth.py
 
