@@ -1,11 +1,15 @@
 ###############################################
-##Dmitry Sutormin, 2021##
+##Dmitry Sutormin, 2023##
 ##Prediction of viral contigs data##
 
+## Part 1.
 #1) Script takes as input data from CheckV, ViralComplete, and VirSorter2
 #2) Filters data from CheckV.
 #3) Overlaps filtered contigs from CheckV, ViralComplete, and VirSorter2.
 #4) Returns mfa file with viral contigs of a high confidence (detected by at least 2 pipelines).
+
+## Part 2.
+#Script takes the output of DeepVirFinder and filters viral contigs with a high confidence.
 ###############################################
 
 
@@ -23,27 +27,38 @@ import csv
 import pandas as pd
 import seaborn as sns
 
+###############
+## Part 1. Initial filtering and overlapping (Virsorter2, CheckV, ViralVerify+ViralComplete)
+###############
+
 #######
 #Data to be used.
 #######
 
+#Path to the working directory.
+PWD="C:\\Users\sutor\OneDrive\ThinkPad_working\Sutor\Science\Spongy\Viral_contigs\Viral_contigs_prediction_and_filtering\Viruses_2016_predictions"
+#PWD="C:\\Users\sutor\OneDrive\ThinkPad_working\Sutor\Science\MetaRUS\Coelentrazine_biosynthesis\Virus_prediction"
+
 #Dataset name.
-Dataset_name="BCT_I_palmata_2018"
+Dataset_name="I_palmata_2016_nanopore"
+
+#Assembly method: metaviralspades, MetaSpades, MetFlye or any other.
+Assembly_method='MetFlye'
 
 #CheckV input data.
-CheckV_inpath=f'C:\\Users\sutor\OneDrive\ThinkPad_working\Sutor\Science\Spongy\Viral_contigs\Viral_contigs_prediction_and_filtering\{Dataset_name}\CheckV_metaviralSPAdes_{Dataset_name}\quality_summary.tsv'
+CheckV_inpath=f'{PWD}\\{Dataset_name}\\{Dataset_name}_quality_summary.tsv'
 
 #VirSorter2 input data.
-VirSorter2_inpath=f'C:\\Users\sutor\OneDrive\ThinkPad_working\Sutor\Science\Spongy\Viral_contigs\Viral_contigs_prediction_and_filtering\{Dataset_name}\\virsorter2_metaviralSPades_{Dataset_name}\\final-viral-score.tsv'
+VirSorter2_inpath=f'{PWD}\\{Dataset_name}\\{Dataset_name}_final-viral-score.tsv'
 
 #ViralComplete input data.
-ViralComplete_inpath=f'C:\\Users\sutor\OneDrive\ThinkPad_working\Sutor\Science\Spongy\Viral_contigs\Viral_contigs_prediction_and_filtering\{Dataset_name}\\viralComplete_after_viralVerify_metaviralSPAdes_{Dataset_name}\contigs_virus_result_table.csv'
+ViralComplete_inpath=f'{PWD}\\{Dataset_name}\\{Dataset_name}_viralverify_virus_result_table.csv'
 
 #ViralVerify input contigs.
-Input_contigs=f'C:\\Users\sutor\OneDrive\ThinkPad_working\Sutor\Science\Spongy\Viral_contigs\Viral_contigs_prediction_and_filtering\{Dataset_name}\\viralVerify_metaviralSPAdes_{Dataset_name}\contigs_input_with_circ.fasta'
+Input_contigs=f'{PWD}\\{Dataset_name}\\{Dataset_name}_input_with_circ.fasta'
 
 #Output path
-Outpath=f'C:\\Users\sutor\OneDrive\ThinkPad_working\Sutor\Science\Spongy\Viral_contigs\Viral_contigs_prediction_and_filtering\{Dataset_name}\\'
+Outpath=f'{PWD}\\{Dataset_name}\\'
 
 
 
@@ -69,7 +84,7 @@ def read_fasta_dict(fasta_path):
 #Read CheckV data and filter.
 #######
 
-def read_checkV_and_filter(checkV_inpath):
+def read_checkV_and_filter(checkV_inpath, assembly_method):
     filein=open(checkV_inpath, 'r')
     
     Viral_contigs=[]
@@ -87,30 +102,36 @@ def read_checkV_and_filter(checkV_inpath):
     
     filein.close()
     
-    Contig_names_dict={}
-    for contig_name in Viral_contigs:
-        contig_name_base, cutoff=contig_name.split('_cutoff_')
-        if contig_name_base in Contig_names_dict:
-            Contig_names_dict[contig_name_base].append(cutoff)
-        else:
-            Contig_names_dict[contig_name_base]=[cutoff]
-    
-    #print(Contig_names_dict)
-    
-    Final_checkV_contigs_names=[]
-    for contig_name_base, cutoff_ar in Contig_names_dict.items():
-        cutoff_value_ar=[]
-        ind=0
-        for cutoff in cutoff_ar:
-            cutoff_value, lin_type=cutoff.split('_type_')
-            if cutoff_value=='metaplasmid':
-                Final_checkV_contigs_names.append(contig_name_base+"_cutoff_metaplasmid_type_circular")
-                ind=1
+    if assembly_method=='metaviralspades':
+        
+        Contig_names_dict={}
+        for contig_name in Viral_contigs:
+            contig_name_base, cutoff=contig_name.split('_cutoff_')
+            if contig_name_base in Contig_names_dict:
+                Contig_names_dict[contig_name_base].append(cutoff)
             else:
-                cutoff_value_ar.append(int(cutoff_value))
-        if ind==0:
-            max_cutoff_value=max(cutoff_value_ar)
-            Final_checkV_contigs_names.append(f'{contig_name_base}_cutoff_{max_cutoff_value}_type_{lin_type}')
+                Contig_names_dict[contig_name_base]=[cutoff]
+
+    
+        #print(Contig_names_dict)
+            
+        Final_checkV_contigs_names=[]
+        for contig_name_base, cutoff_ar in Contig_names_dict.items():
+            cutoff_value_ar=[]
+            ind=0
+            for cutoff in cutoff_ar:
+                cutoff_value, lin_type=cutoff.split('_type_')
+                if cutoff_value=='metaplasmid':
+                    Final_checkV_contigs_names.append(contig_name_base+"_cutoff_metaplasmid_type_circular")
+                    ind=1
+                else:
+                    cutoff_value_ar.append(int(cutoff_value))
+            if ind==0:
+                max_cutoff_value=max(cutoff_value_ar)
+                Final_checkV_contigs_names.append(f'{contig_name_base}_cutoff_{max_cutoff_value}_type_{lin_type}')
+    
+    elif assembly_method!='metaviralspades':
+        Final_checkV_contigs_names=list(set(Viral_contigs))
         
     #print(Final_checkV_contigs_names)
     
@@ -118,15 +139,13 @@ def read_checkV_and_filter(checkV_inpath):
     
     return Final_checkV_contigs_names
 
-Final_checkV_contigs_names=read_checkV_and_filter(CheckV_inpath)
-
 
 
 #######
 #Read VirSorter2 data.
 #######
 
-def read_virsorter2(virSorter2_inpath):
+def read_virsorter2(virSorter2_inpath, assembly_method):
     filein=open(virSorter2_inpath, 'r')
     
     VirSorter2_contigs_names=[]
@@ -141,30 +160,34 @@ def read_virsorter2(virSorter2_inpath):
     
     #print(VirSorter2_contigs_names)
     
-    Contig_names_dict={}
-    for contig_name in VirSorter2_contigs_names:
-        contig_name_base, cutoff=contig_name.split('_cutoff_')
-        if contig_name_base in Contig_names_dict:
-            Contig_names_dict[contig_name_base].append(cutoff)
-        else:
-            Contig_names_dict[contig_name_base]=[cutoff]    
-            
-    #print(Contig_names_dict)
-            
-    Final_virsorter2_contigs_names=[]
-    for contig_name_base, cutoff_ar in Contig_names_dict.items():
-        cutoff_value_ar=[]
-        ind=0
-        for cutoff in cutoff_ar:
-            cutoff_value, lin_type=cutoff.split('_type_')
-            if cutoff_value=='metaplasmid':
-                Final_virsorter2_contigs_names.append(contig_name_base+"_cutoff_metaplasmid_type_circular")
-                ind=1
+    if assembly_method=='metaviralspades':
+        Contig_names_dict={}
+        for contig_name in VirSorter2_contigs_names:
+            contig_name_base, cutoff=contig_name.split('_cutoff_')
+            if contig_name_base in Contig_names_dict:
+                Contig_names_dict[contig_name_base].append(cutoff)
             else:
-                cutoff_value_ar.append(int(cutoff_value))
-        if ind==0:
-            max_cutoff_value=max(cutoff_value_ar)
-            Final_virsorter2_contigs_names.append(f'{contig_name_base}_cutoff_{max_cutoff_value}_type_{lin_type}')
+                Contig_names_dict[contig_name_base]=[cutoff]    
+            
+        #print(Contig_names_dict)
+            
+        Final_virsorter2_contigs_names=[]
+        for contig_name_base, cutoff_ar in Contig_names_dict.items():
+            cutoff_value_ar=[]
+            ind=0
+            for cutoff in cutoff_ar:
+                cutoff_value, lin_type=cutoff.split('_type_')
+                if cutoff_value=='metaplasmid':
+                    Final_virsorter2_contigs_names.append(contig_name_base+"_cutoff_metaplasmid_type_circular")
+                    ind=1
+                else:
+                    cutoff_value_ar.append(int(cutoff_value))
+            if ind==0:
+                max_cutoff_value=max(cutoff_value_ar)
+                Final_virsorter2_contigs_names.append(f'{contig_name_base}_cutoff_{max_cutoff_value}_type_{lin_type}')
+    
+    elif assembly_method!='metaviralspades':
+        Final_virsorter2_contigs_names=list(set(VirSorter2_contigs_names))
         
     #print(Final_virsorter2_contigs_names)
     
@@ -172,15 +195,13 @@ def read_virsorter2(virSorter2_inpath):
     
     return Final_virsorter2_contigs_names
 
-VirSorter2_contigs_names=read_virsorter2(VirSorter2_inpath)
-
 
 
 #######
 #Read ViralVerify -> ViralComplete data.
 #######
 
-def read_ViralComplete_data(viralComplete_inpath):
+def read_ViralComplete_data(viralComplete_inpath, assembly_method):
     filein=open(viralComplete_inpath, 'r')
     
     VirComp_contigs_names=[]
@@ -194,39 +215,41 @@ def read_ViralComplete_data(viralComplete_inpath):
     
     #print(VirComp_contigs_names)
     
-    Contig_names_dict={}
-    for contig_name in VirComp_contigs_names:
-        contig_name_base, cutoff=contig_name.split('_cutoff_')
-        if contig_name_base in Contig_names_dict:
-            Contig_names_dict[contig_name_base].append(cutoff)
-        else:
-            Contig_names_dict[contig_name_base]=[cutoff]    
-            
-    #print(Contig_names_dict)
-            
-    Final_VirComp_contigs_names=[]
-    for contig_name_base, cutoff_ar in Contig_names_dict.items():
-        cutoff_value_ar=[]
-        ind=0
-        for cutoff in cutoff_ar:
-            cutoff_value, lin_type=cutoff.split('_type_')
-            if cutoff_value=='metaplasmid':
-                Final_VirComp_contigs_names.append(contig_name_base+"_cutoff_metaplasmid_type_circular")
-                ind=1
+    if assembly_method=='metaviralspades':
+        Contig_names_dict={}
+        for contig_name in VirComp_contigs_names:
+            contig_name_base, cutoff=contig_name.split('_cutoff_')
+            if contig_name_base in Contig_names_dict:
+                Contig_names_dict[contig_name_base].append(cutoff)
             else:
-                cutoff_value_ar.append(int(cutoff_value))
-        if ind==0:
-            max_cutoff_value=max(cutoff_value_ar)
-            Final_VirComp_contigs_names.append(f'{contig_name_base}_cutoff_{max_cutoff_value}_type_{lin_type}')
+                Contig_names_dict[contig_name_base]=[cutoff]    
+                
+        #print(Contig_names_dict)
+            
+        Final_VirComp_contigs_names=[]
+        for contig_name_base, cutoff_ar in Contig_names_dict.items():
+            cutoff_value_ar=[]
+            ind=0
+            for cutoff in cutoff_ar:
+                cutoff_value, lin_type=cutoff.split('_type_')
+                if cutoff_value=='metaplasmid':
+                    Final_VirComp_contigs_names.append(contig_name_base+"_cutoff_metaplasmid_type_circular")
+                    ind=1
+                else:
+                    cutoff_value_ar.append(int(cutoff_value))
+            if ind==0:
+                max_cutoff_value=max(cutoff_value_ar)
+                Final_VirComp_contigs_names.append(f'{contig_name_base}_cutoff_{max_cutoff_value}_type_{lin_type}')
         
-    #print(Final_VirComp_contigs_names)
+    elif assembly_method!='metaviralspades':
+        Final_VirComp_contigs_names=list(set(VirComp_contigs_names))
+        
+    #print(Final_virsorter2_contigs_names)
     
     print(f'Number of Viral contigs detected by ViralVerify & ViralComplete: {len(Final_VirComp_contigs_names)}')
     
     return Final_VirComp_contigs_names
     
-
-ViralComplete_contigs_names=read_ViralComplete_data(ViralComplete_inpath)
 
 
 #######
@@ -264,4 +287,108 @@ def overlap_vir_conting_sets(Final_checkV_contigs_names, Final_virsorter2_contig
     
     return
 
-overlap_vir_conting_sets(Final_checkV_contigs_names, VirSorter2_contigs_names, ViralComplete_contigs_names, Input_contigs, Dataset_name, Outpath)
+
+#######
+#Initial filtering and overlapping wrapper function.
+#######
+
+def Init_filtering_wrapper(checkV_inpath, virSorter2_inpath, viralComplete_inpath, input_contigs, dataset_name, assembly_method, outpath):
+    
+    #Read CheckV data.
+    Final_checkV_contigs_names=read_checkV_and_filter(checkV_inpath, assembly_method)
+    
+    #Read Virsorter2 data.
+    VirSorter2_contigs_names=read_virsorter2(virSorter2_inpath, assembly_method)
+    
+    #Read ViralComplete data.
+    ViralComplete_contigs_names=read_ViralComplete_data(viralComplete_inpath, assembly_method)
+    
+    #Combine and overlap.
+    overlap_vir_conting_sets(Final_checkV_contigs_names, VirSorter2_contigs_names, ViralComplete_contigs_names, input_contigs, dataset_name, outpath)
+    
+    return
+
+Init_filtering_wrapper(CheckV_inpath, VirSorter2_inpath, ViralComplete_inpath, Input_contigs, Dataset_name, Assembly_method, Outpath)
+
+
+
+###############
+## Part 2. Additional filtering using DeepVirFinder.
+###############
+
+#Path to the working directory.
+PWD="C:\\Users\sutor\OneDrive\ThinkPad_working\Sutor\Science\Spongy\Viral_contigs\Viral_contigs_prediction_and_filtering\Viruses_2016_predictions"
+#PWD="C:\\Users\sutor\OneDrive\ThinkPad_working\Sutor\Science\MetaRUS\Coelentrazine_biosynthesis\Virus_prediction"
+
+#Dataset name.
+Dataset_name="H_sitiens_2016_nanopore"
+
+#Assembly method: metaviralspades, MetaSpades, MetFlye or any other.
+Assembly_method='MetFlye'
+
+#Score and P-value thresholds for data filtering.
+Score_thr=0.6
+Pvalue_thr=0.05
+
+#DeepVirFinder input data.
+DeepVirFinder_inpath=f'{PWD}\\{Dataset_name}\\{Dataset_name}_vir_contig_sets_overlap_gt4000bp_dvfpred.txt'
+
+#Input contigs.
+Input_contigs=f'{PWD}\\{Dataset_name}\\{Dataset_name}_vir_contig_sets_overlap.fasta'
+
+#Output path
+Outpath=f'{PWD}\{Dataset_name}\\'
+
+
+#######
+#Data filtering using DeepVirFinder.
+#######
+
+def DeepVirFinder_filter(deepvirfinder_inpath, dataset_name, score_thr, pvalue_thr, outpath):
+    
+    Filt_cont_list=[]
+    
+    i=0
+    DVF_input=open(deepvirfinder_inpath, 'r')
+    for line in DVF_input:
+        line=line.rstrip().split('\t')
+        if line[0] not in ['name']:
+            Contig_name=line[0]
+            Contig_len=int(line[1])
+            Contig_score=float(line[2])
+            Contig_pvalue=float(line[3])
+            i+=1
+            if (Contig_score>=score_thr) and (Contig_pvalue<pvalue_thr):
+                Filt_cont_list.append(Contig_name)
+            
+    DVF_input.close()
+    
+    print(f'Number of {dataset_name} contigs survived with Score threshold {score_thr} and P-value threshold {pvalue_thr}: {len(Filt_cont_list)}/{i} ({np.round((float(len(Filt_cont_list))/i)*100, 1)}%)')
+    
+    return Filt_cont_list
+
+
+#######
+#DeepVirFinder data analysis wrapper.
+#######
+
+def DeepVirFinder_filter_set_wrapper(fasta_inpath, deepvirfinder_inpath, dataset_name, score_thr, pvalue_thr, outpath):
+    
+    #Read input contigs to be filtered.
+    Input_contigs_dict=read_fasta_dict(fasta_inpath)
+    
+    #Filter contigs using DeepVirFinder predictions.
+    Filt_cont_list=DeepVirFinder_filter(deepvirfinder_inpath, dataset_name, score_thr, pvalue_thr, outpath)
+    
+    #Return sequences of filtered viral contigs.
+    Output_viral_contigs=open(f'{outpath}\{dataset_name}_sc_{score_thr}_pval_{pvalue_thr}_vir_contig_set_final.fasta', 'w')
+    
+    for contig_name in list(Filt_cont_list):
+        Contig_seq=Input_contigs_dict[contig_name]
+        Output_viral_contigs.write(f'>{contig_name}\n{Contig_seq}\n')
+    
+    Output_viral_contigs.close()       
+    
+    return
+
+#DeepVirFinder_filter_set_wrapper(Input_contigs, DeepVirFinder_inpath, Dataset_name, Score_thr, Pvalue_thr, Outpath)
